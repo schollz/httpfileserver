@@ -70,6 +70,9 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if ok {
 		file := fileint.(file)
 		for k := range file.header {
+			if k == "Content-Encoding" {
+				continue
+			}
 			for _, v := range file.header[k] {
 				if len(v) == 0 {
 					continue
@@ -90,6 +93,7 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var wc io.WriteCloser
 	if doGzip {
+		w.Header().Set("Content-Encoding", "gzip")
 		wc = gzip.NewWriter(w)
 	} else {
 		wc = &writeCloser{bufio.NewWriter(w)}
@@ -107,9 +111,6 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			header: w.Header(),
 		}
 		fs.cache.Store(key, file)
-	}
-	if doGzip {
-		w.Header().Set("Content-Encoding", "gzip")
 	}
 }
 
