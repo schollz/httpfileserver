@@ -1,4 +1,4 @@
-package main
+package httpfileserver
 
 import (
 	"bufio"
@@ -134,9 +134,4 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		fs.cache.Store(key, file)
 	}
-}
-
-func main() {
-	http.HandleFunc("/static/", New("/static", ".").Handle())
-	http.ListenAndServe(":1113", nil)
 }
