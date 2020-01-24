@@ -21,6 +21,30 @@ func main() {
 }
 ```
 
+## Benchmarks
+
+Using the `example` I tested both the stdlib and this version for serving a file.
+
+Using the Go stdlib (`http.Handle("/", http.FileServer(http.Dir(".")))`):
+
+```
+$ ab -n 20000 -H "Accept-Encoding: gzip,deflate" http://localhost:1113/main.go # stdlib
+...
+HTML transferred:       4640000 bytes
+Requests per second:    3575.56 [#/sec] (mean)
+...
+```
+
+Using `http.Handle("/new/", httpfileserver.New("/new", "."))`:
+
+```
+$ ab -n 20000 -H "Accept-Encoding: gzip,deflate" http://localhost:1113/new/main.go # this lib
+...
+HTML transferred:       3680000 bytes
+Requests per second:    4544.44 [#/sec] (mean)
+...
+```
+
 ## License
 
 MIT

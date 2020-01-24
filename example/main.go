@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/static/", httpfileserver.New("/static", ".").Handle())
+	http.Handle("/new/", httpfileserver.New("/new", "."))
+	http.Handle("/", http.FileServer(http.Dir(".")))
 	http.ListenAndServe(":1113", nil)
 }
