@@ -1,5 +1,12 @@
 # httpfileserver
-A cache-friendly, gzip-friendly file server to bind the std Golang http
+
+This is a drop-in replacement for the Golang stdlib `http.FileServer`. Instead of writing
+
+	http.Handle("/", http.FileServer(http.Dir(".")))
+
+you can just write
+
+	http.Handle("/", httpfileserver.New("/", "."))
 
 
 ## Example
@@ -23,7 +30,7 @@ func main() {
 
 ## Benchmarks
 
-Using the `example` I tested both the stdlib and this version for serving a file.
+Using the `example` I tested both the stdlib and this version for serving a file. This version is about 22% faster (since it is reading from memory) and automatically uses `gzip` when capable.
 
 Using the Go stdlib (`http.Handle("/", http.FileServer(http.Dir(".")))`):
 
@@ -35,7 +42,7 @@ Requests per second:    3575.56 [#/sec] (mean)
 ...
 ```
 
-Using `http.Handle("/new/", httpfileserver.New("/new", "."))`:
+Using this library `http.Handle("/new/", httpfileserver.New("/new", "."))`:
 
 ```
 $ ab -n 20000 -H "Accept-Encoding: gzip,deflate" http://localhost:1113/new/main.go # this lib
