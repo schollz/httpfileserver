@@ -1,13 +1,16 @@
 # httpfileserver
 
-This is a drop-in replacement for the Golang stdlib `http.FileServer`. Instead of writing
+This is a drop-in replacement for the Golang stdlib `http.FileServer` that serves from memory instead of from disk, as well as provides automatic gzipping when requested.
+
+To use, you can just replace your `http.Handle` or `http.HandlerFunc`, e.g. you can take the stdlib version:
 
 	http.Handle("/", http.FileServer(http.Dir(".")))
 
-you can just write
+and replace it with this library:
 
 	http.Handle("/", httpfileserver.New("/", "."))
 
+This library essentially wraps the stdlib `http.FileServer` so you get all the benefits of that library, while also providing gzipping and keeping track of bytes and storing served files from memory when they come available.
 
 ## Example
 
