@@ -18,6 +18,16 @@ func BenchmarkServer(b *testing.B) {
 	}
 }
 
+func BenchmarkServerDisableCache(b *testing.B) {
+	ts := httptest.NewServer(New("/", ".", OptionNoCache(true)).Handle())
+	defer ts.Close()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		resp, _ := http.Get(ts.URL + "/README.md")
+		resp.Body.Close()
+	}
+}
+
 func TestServer(t *testing.T) {
 	ts := httptest.NewServer(New("/", ".").Handle())
 	defer ts.Close()
