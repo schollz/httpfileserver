@@ -50,31 +50,33 @@ func (m middleware) Write(b []byte) (int, error) {
 }
 
 func (fs *fileServer) Handle() http.HandlerFunc {
+	return fs.ServeHTTP
+}
+
+func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fn := http.FileServer(http.Dir(fs.dir)).ServeHTTP
-	return func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = strings.TrimPrefix(r.URL.Path, fs.route)
-		doGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
+	r.URL.Path = strings.TrimPrefix(r.URL.Path, fs.route)
+	doGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 
-		// TODO
-		// check the sync map using the r.URL.Path and return
-		// the gzipped or the standard version
+	// TODO
+	// check the sync map using the r.URL.Path and return
+	// the gzipped or the standard version
 
-		var wc io.WriteCloser
-		if doGzip {
-			w.Header().Set("Content-Encoding", "gzip")
-			wc = gzip.NewWriter(w)
-		} else {
-			wc = &writeCloser{bufio.NewWriter(w)}
-		}
-		defer wc.Close()
-
-		gzr := middleware{Writer: wc, ResponseWriter: w, bytesWritten: new(bytes.Buffer)}
-		fn(gzr, r)
-
-		// TODO
-		// extract bytes written and the header and save it as a file
-		// to the sync map using the r.URL.Path
+	var wc io.WriteCloser
+	if doGzip {
+		w.Header().Set("Content-Encoding", "gzip")
+		wc = gzip.NewWriter(w)
+	} else {
+		wc = &writeCloser{bufio.NewWriter(w)}
 	}
+	defer wc.Close()
+
+	gzr := middleware{Writer: wc, ResponseWriter: w, bytesWritten: new(bytes.Buffer)}
+	fn(gzr, r)
+
+	// TODO
+	// extract bytes written and the header and save it as a file
+	// to the sync map using the r.URL.Path
 }
 
 func main() {
