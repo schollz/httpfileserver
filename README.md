@@ -1,5 +1,11 @@
 # httpfileserver
 
+[![travis](https://travis-ci.org/schollz/httpfileserver.svg?branch=master)](https://travis-ci.org/schollz/httpfileserver) 
+[![go report card](https://goreportcard.com/badge/github.com/schollz/httpfileserver)](https://goreportcard.com/report/github.com/schollz/httpfileserver) 
+[![coverage](https://img.shields.io/badge/coverage-87%25-brightgreen.svg)](https://gocover.io/github.com/schollz/httpfileserver)
+[![godocs](https://godoc.org/github.com/schollz/httpfileserver?status.svg)](https://godoc.org/github.com/schollz/httpfileserver) 
+
+
 This is a drop-in replacement for the Golang stdlib `http.FileServer` that serves from memory instead of from disk, as well as provides automatic gzipping when requested.
 
 To use, you can just replace your `http.Handle` or `http.HandlerFunc`, e.g. you can take the stdlib version:
