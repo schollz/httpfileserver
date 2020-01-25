@@ -66,12 +66,6 @@ func (wc *writeCloser) Close() error {
 
 // Write will have the middleware save the bytes
 func (m middleware) Write(b []byte) (int, error) {
-	if len(b)+m.numBytes < 1000000 {
-		n, _ := m.bytesWritten.Write(b)
-		m.numBytes += n
-	} else {
-		m.overflow = true
-	}
 	return m.Writer.Write(b)
 }
 
@@ -151,7 +145,7 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// extract bytes written and the header and save it as a file
 	// to the sync map using the r.URL.Path
-	if !mware.overflow && !fs.optionDisableCache {
+	if !fs.optionDisableCache {
 		file := file{
 			bytes:  mware.bytesWritten.Bytes(),
 			header: w.Header(),
