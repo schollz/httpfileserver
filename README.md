@@ -6,17 +6,23 @@
 [![godocs](https://godoc.org/github.com/schollz/httpfileserver?status.svg)](https://godoc.org/github.com/schollz/httpfileserver) 
 
 
-This is a drop-in replacement for the Golang stdlib `http.FileServer` that serves from memory instead of from disk, as well as provides automatic gzipping when requested.
+This is a drop-in replacement for the stdlib `http.FileServer` that automatically provides gzipping as well as serving from memory instead of from disk. This library wraps the stdlib `http.FileServer` so you get all the benefits of that code, while also providing gzipping and keeping track of bytes and storing served files from memory when they come available.
 
-To use, you can just replace your `http.Handle` or `http.HandlerFunc`, e.g. you can take the stdlib version:
+To use, you can just replace the `http.Fileserver` in your `http.Handle` or `http.HandlerFunc` with `httpfileserver.New(route,directory)`. For example, to serve static assets, you can replace the std lib version
 
-	http.Handle("/", http.FileServer(http.Dir(".")))
+	http.Handle("/static/", http.FileServer(http.Dir(".")))
 
-and replace it with this library:
+with this version
 
-	http.Handle("/", httpfileserver.New("/", "."))
+	http.Handle("/static/", httpfileserver.New("/static", "."))
 
-This library essentially wraps the stdlib `http.FileServer` so you get all the benefits of that library, while also providing gzipping and keeping track of bytes and storing served files from memory when they come available.
+## Usage
+
+In order to serve files from a different directory other than specified by the route, you need to include the route when specifying a file server. For example, if you want to serve `/static` files from a local directory called `/tmp/myassets` then you can specify a new file server in the following:
+
+	http.Handle("/static/", httpfileserver.New("/static", "/tmp/myassets"))
+
+The route is in the handle as well as the instance of the file server so that it can trim it and then server from the directory as intended.
 
 ## Example
 
@@ -39,7 +45,7 @@ func main() {
 
 ## Benchmarks
 
-Using the `example` I tested both the stdlib and this version for serving a file. This version is about 22% faster (since it is reading from memory) and automatically uses `gzip` when capable.
+Using the `example` in this repo I tested both the stdlib and this version for serving a file. This version is about 22% faster (since it is reading from memory) and automatically uses `gzip` when capable.
 
 Using the Go stdlib (`http.Handle("/", http.FileServer(http.Dir(".")))`):
 
