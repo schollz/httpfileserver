@@ -2,7 +2,7 @@
 
 [![travis](https://travis-ci.org/schollz/httpfileserver.svg?branch=master)](https://travis-ci.org/schollz/httpfileserver) 
 [![go report card](https://goreportcard.com/badge/github.com/schollz/httpfileserver)](https://goreportcard.com/report/github.com/schollz/httpfileserver) 
-[![coverage](https://img.shields.io/badge/coverage-87%25-brightgreen.svg)](https://gocover.io/github.com/schollz/httpfileserver)
+[![coverage](https://img.shields.io/badge/coverage-90%25-brightgreen.svg)](https://gocover.io/github.com/schollz/httpfileserver)
 [![godocs](https://godoc.org/github.com/schollz/httpfileserver?status.svg)](https://godoc.org/github.com/schollz/httpfileserver) 
 
 

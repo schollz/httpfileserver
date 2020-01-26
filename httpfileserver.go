@@ -162,7 +162,7 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// extract bytes written and the header and save it as a file
 	// to the sync map using the r.URL.Path
-	if !fs.optionDisableCache && !*mware.overflow {
+	if !fs.optionDisableCache && !*mware.overflow && !bytes.Equal(mware.bytesWritten.Bytes(), []byte("404 page not found\n")) {
 		file := file{
 			bytes:  mware.bytesWritten.Bytes(),
 			header: w.Header(),
