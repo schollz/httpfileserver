@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 type fileServer struct {
@@ -26,11 +27,29 @@ func New(route, dir string, options ...Option) *fileServer {
 	fs := &fileServer{
 		dir:                   dir,
 		route:                 route,
-		optionMaxBytesPerFile: 1000000000,
+		optionMaxBytesPerFile: 10000000, // 10 mb
 	}
 	for _, o := range options {
 		o(fs)
 	}
+
+	go func() {
+		// periodically clean out the sync map of old stuff
+		for {
+			time.Sleep(1 * time.Minute)
+			fs.cache.Range(func(k, v interface{}) bool {
+				f, ok := v.(file)
+				if !ok {
+					return false
+				}
+				if time.Since(f.date) > 10*time.Minute {
+					fs.cache.Delete(k)
+				}
+				return true
+			})
+		}
+		return
+	}()
 	return fs
 }
 
@@ -44,7 +63,8 @@ func OptionNoCache(disable bool) Option {
 	}
 }
 
-// OptionMaxBytes sets the maximum number of bytes per file to cache
+// OptionMaxBytes sets the maximum number of bytes per file to cache,
+// the default is 10 MB
 func OptionMaxBytes(optionMaxBytesPerFile int) Option {
 	return func(fs *fileServer) {
 		fs.optionMaxBytesPerFile = optionMaxBytesPerFile
@@ -63,6 +83,7 @@ type middleware struct {
 type file struct {
 	bytes  []byte
 	header http.Header
+	date   time.Time
 }
 
 type writeCloser struct {
@@ -166,6 +187,7 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		file := file{
 			bytes:  mware.bytesWritten.Bytes(),
 			header: w.Header(),
+			date:   time.Now(),
 		}
 		fs.cache.Store(key, file)
 	}
