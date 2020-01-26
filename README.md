@@ -14,13 +14,13 @@ To use, you can just replace the `http.Fileserver` in your `http.Handle` or `htt
 
 with this version
 
-	http.Handle("/static/", httpfileserver.New("/static", "."))
+	http.Handle("/static/", httpfileserver.New("/static/", "."))
 
 ## Usage
 
 In order to serve files from a different directory other than specified by the route, you need to include the route when specifying a file server. For example, if you want to serve `/static` files from a local directory called `/tmp/myassets` then you can specify a new file server in the following:
 
-	http.Handle("/static/", httpfileserver.New("/static", "/tmp/myassets"))
+	http.Handle("/static/", httpfileserver.New("/static/", "/tmp/myassets"))
 
 The route is in the handle as well as the instance of the file server so that it can trim it and then server from the directory as intended.
 
@@ -38,7 +38,7 @@ import (
 
 func main() {
 	// Any request to /static/somefile.txt will serve the file at the location ./somefile.txt
-        http.HandleFunc("/static/", httpfileserver.New("/static", ".").Handle())
+        http.HandleFunc("/static/", httpfileserver.New("/static/", ".").Handle())
         http.ListenAndServe(":1113", nil)
 }
 ```
