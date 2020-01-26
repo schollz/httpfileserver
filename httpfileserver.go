@@ -99,6 +99,7 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// the gzipped or the standard version
 	key := r.URL.Path
 
+	// open from cache if its not disabled
 	if !fs.optionDisableCache {
 		if doGzip {
 			// load the gzipped cache version if available
@@ -116,7 +117,7 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		// try to load from cache
+		// try to load a regular version from the cache
 		fileint, ok := fs.cache.Load(key)
 		if ok {
 			file := fileint.(file)
