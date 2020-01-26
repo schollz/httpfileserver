@@ -16,15 +16,17 @@ type fileServer struct {
 	middleware middleware
 	cache      sync.Map
 
-	optionDisableCache bool
+	optionDisableCache    bool
+	optionMaxBytesPerFile int
 }
 
 // New returns a new file server that can handle requests for
 // files using an in-memory store with gzipping
 func New(route, dir string, options ...Option) *fileServer {
 	fs := &fileServer{
-		dir:   dir,
-		route: route,
+		dir:                   dir,
+		route:                 route,
+		optionMaxBytesPerFile: 1000000000,
 	}
 	for _, o := range options {
 		o(fs)
@@ -42,12 +44,20 @@ func OptionNoCache(disable bool) Option {
 	}
 }
 
+// OptionMaxBytes sets the maximum number of bytes per file to cache
+func OptionMaxBytes(optionMaxBytesPerFile int) Option {
+	return func(fs *fileServer) {
+		fs.optionMaxBytesPerFile = optionMaxBytesPerFile
+	}
+}
+
 type middleware struct {
 	io.Writer
 	http.ResponseWriter
 	bytesWritten *bytes.Buffer
 	numBytes     *int
 	overflow     *bool
+	maxBytes     int
 }
 
 type file struct {
@@ -66,7 +76,7 @@ func (wc *writeCloser) Close() error {
 
 // Write will have the middleware save the bytes
 func (m middleware) Write(b []byte) (int, error) {
-	if len(b)+*m.numBytes < 1000000 {
+	if len(b)+*m.numBytes < m.maxBytes {
 		n, _ := m.bytesWritten.Write(b)
 		*m.numBytes += n
 	} else {
@@ -146,7 +156,7 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer wc.Close()
 
-	mware := middleware{Writer: wc, ResponseWriter: w, bytesWritten: new(bytes.Buffer), numBytes: new(int), overflow: new(bool)}
+	mware := middleware{Writer: wc, ResponseWriter: w, bytesWritten: new(bytes.Buffer), numBytes: new(int), overflow: new(bool), maxBytes: fs.optionMaxBytesPerFile}
 	fn(mware, r)
 
 	// extract bytes written and the header and save it as a file
