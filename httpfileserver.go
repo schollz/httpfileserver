@@ -66,6 +66,7 @@ func (wc *writeCloser) Close() error {
 
 // Write will have the middleware save the bytes
 func (m middleware) Write(b []byte) (int, error) {
+	m.bytesWritten.Write(b)
 	return m.Writer.Write(b)
 }
 
