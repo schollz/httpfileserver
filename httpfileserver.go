@@ -46,8 +46,8 @@ type middleware struct {
 	io.Writer
 	http.ResponseWriter
 	bytesWritten *bytes.Buffer
-	numBytes     int
-	overflow     bool
+	numBytes     *int
+	overflow     *bool
 }
 
 type file struct {
@@ -66,7 +66,12 @@ func (wc *writeCloser) Close() error {
 
 // Write will have the middleware save the bytes
 func (m middleware) Write(b []byte) (int, error) {
-	m.bytesWritten.Write(b)
+	if len(b)+*m.numBytes < 1000000 {
+		n, _ := m.bytesWritten.Write(b)
+		*m.numBytes += n
+	} else {
+		*m.overflow = true
+	}
 	return m.Writer.Write(b)
 }
 
@@ -141,12 +146,12 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer wc.Close()
 
-	mware := middleware{Writer: wc, ResponseWriter: w, bytesWritten: new(bytes.Buffer)}
+	mware := middleware{Writer: wc, ResponseWriter: w, bytesWritten: new(bytes.Buffer), numBytes: new(int), overflow: new(bool)}
 	fn(mware, r)
 
 	// extract bytes written and the header and save it as a file
 	// to the sync map using the r.URL.Path
-	if !fs.optionDisableCache {
+	if !fs.optionDisableCache && !*mware.overflow {
 		file := file{
 			bytes:  mware.bytesWritten.Bytes(),
 			header: w.Header(),
