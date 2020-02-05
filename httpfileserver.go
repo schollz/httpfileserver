@@ -113,7 +113,6 @@ func (fs *fileServer) Handle() http.HandlerFunc {
 
 // ServeHTTP is the server of the file server
 func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fn := http.FileServer(http.Dir(fs.dir)).ServeHTTP
 	r.URL.Path = strings.TrimPrefix(r.URL.Path, fs.route)
 	doGzip := strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
 	// check the sync map using the r.URL.Path and return
@@ -171,15 +170,15 @@ func (fs *fileServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var wc io.WriteCloser
 	if doGzip {
-		w.Header().Set("Content-Encoding", "gzip")
 		wc = gzip.NewWriter(w)
+		w.Header().Set("Content-Encoding", "gzip")
 	} else {
 		wc = &writeCloser{bufio.NewWriter(w)}
 	}
 	defer wc.Close()
 
 	mware := middleware{Writer: wc, ResponseWriter: w, bytesWritten: new(bytes.Buffer), numBytes: new(int), overflow: new(bool), maxBytes: fs.optionMaxBytesPerFile}
-	fn(mware, r)
+	http.FileServer(http.Dir(fs.dir)).ServeHTTP(mware, r)
 
 	// extract bytes written and the header and save it as a file
 	// to the sync map using the r.URL.Path
