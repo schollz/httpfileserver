@@ -21,6 +21,19 @@ type fileServer struct {
 	optionMaxBytesPerFile int
 }
 
+// Flush clears all data from cache
+func (fs *fileServer) Flush() error {
+	fs.cache.Range(func(k, v interface{}) bool {
+		f, ok := v.(file)
+		if !ok {
+			return false
+		}
+		fs.cache.Delete(k)
+		return true
+	})
+	return nil
+}
+
 // New returns a new file server that can handle requests for
 // files using an in-memory store with gzipping
 func New(route, dir string, options ...Option) *fileServer {

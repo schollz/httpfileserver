@@ -1,3 +1,3 @@
-module github.com/schollz/httpfileserver
+module github.com/sjsafranek/httpfileserver
 
 go 1.13
